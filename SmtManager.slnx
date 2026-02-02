@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SmtManager.API/SmtManager.API.csproj" />
+  <Project Path="SmtManager.Application/SmtManager.Application.csproj" />
+  <Project Path="SmtManager.Core/SmtManager.Core.csproj" />
+  <Project Path="SmtManager.Infrastructure/SmtManager.Infrastructure.csproj" />
+</Solution>

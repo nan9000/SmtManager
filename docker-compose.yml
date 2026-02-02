@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # MSSQL Database
+  smt-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: smt_sql_server
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=StrongP@ssw0rd! # prod should use docker secrets
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    networks:
+      - smt-network
+
+  # .NET Core Web API
+  smt-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: smt_api
+    depends_on:
+      - smt-db
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=smt-db;Database=SmtDb;User Id=sa;Password=StrongP@ssw0rd!;TrustServerCertificate=True;
+    ports:
+      - "5000:80"
+    networks:
+      - smt-network
+
+  # Angular Frontend (Served via Nginx in Prod)
+  smt-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: smt_web
+    ports:
+      - "4200:80"
+    depends_on:
+      - smt-api
+    networks:
+      - smt-network
+
+volumes:
+  sql_data:
+
+networks:
+  smt-network:
+    driver: bridge

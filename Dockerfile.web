@@ -1,0 +1,27 @@
+﻿# 1. Faza: Build Angular aplikacije (koristimo Node.js)
+FROM node:22 AS build
+WORKDIR /app
+
+# Kopiramo package.json i package-lock.json iz client foldera
+COPY SmtManager.Web/package*.json ./
+
+# Instaliramo dependencyje
+RUN npm install
+
+# Kopiramo ostatak Angular koda i config fileova
+COPY SmtManager.Web/ .
+
+# Buildamo za produkciju
+RUN npm run build -- --configuration production
+
+# 2. Faza: Nginx Server (za serviranje statičkih fileova)
+FROM nginx:alpine
+
+# Kopiramo buildanu aplikaciju u Nginx folder
+COPY --from=build /app/dist/client/browser /usr/share/nginx/html
+
+# Expose port 80 (unutar kontejnera)
+EXPOSE 80
+
+# Pokrećemo Nginx
+CMD ["nginx", "-g", "daemon off;"]
