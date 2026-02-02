@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # MSSQL Database
+  smt-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: smt_sql_server
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${SA_PASSWORD} -C -Q 'SELECT 1' || exit 1" ]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    volumes:
+      - sql_data:/var/opt/mssql
+    networks:
+      - smt-network
+
+  # .NET Core Web API
+  smt-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: smt_api
+    depends_on:
+      smt-db:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=smt-db;Database=SmtDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
+      - JwtSettings__Key=${JWT_KEY}
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5000:8080"
+    networks:
+      - smt-network
+
+  # Angular Frontend (Served via Nginx in Prod)
+  smt-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: smt_web
+    ports:
+      - "4200:80"
+    depends_on:
+      - smt-api
+    networks:
+      - smt-network
+
+volumes:
+  sql_data:
+
+
+networks:
+  smt-network:
+    driver: bridge

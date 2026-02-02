@@ -1,0 +1,174 @@
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="display-6 mb-3">Code Challenge - Adnan Jukic</h1>
+      <button (click)="openNewOrderModal()" class="btn btn-primary">
+        <i class="fas fa-plus-circle me-1"></i> New Order
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <span class="me-2"><i class="fas fa-box"></i></span> Active Orders
+            </h5>
+            <span class="badge bg-primary rounded-pill">{{ orderList().length }}</span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          @if (orderList().length > 0) {
+          <div class="list-group list-group-flush">
+            @for (order of orderList(); track order.id) {
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <h6 class="mb-1 fw-bold">{{ order.orderNumber }}</h6>
+                  @if (order.status === 'Pending') {
+                  <span class="badge bg-warning text-dark">Pending</span>
+                  } @else if (order.status === 'Production') {
+                  <span class="badge bg-info">Production</span>
+                  } @else if (order.status === 'Completed') {
+                  <span class="badge bg-success">Completed</span>
+                  }
+                </div>
+                <div class="btn-group btn-group-sm">
+                <div class="btn-group btn-group-sm">
+                  <button (click)="openUpdateOrderModal(order)" class="btn btn-outline-primary" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button (click)="downloadOrder(order.id)" class="btn btn-outline-success" title="Download">
+                    <i class="fas fa-download"></i>
+                  </button>
+                  <button (click)="deleteOrder(order.id)" class="btn btn-outline-danger" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                </div>
+              </div>
+              <p class="mb-2 text-muted">{{ order.description }}</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted"><i class="far fa-calendar-alt me-1"></i> {{ order.orderDate | date:'MMM dd, yyyy' }}</small>
+                <small class="text-muted">ID: {{ order.id }}</small>
+              </div>
+            </div>
+            }
+          </div>
+          } @else {
+          <div class="text-center py-5">
+            <div class="fs-1 mb-3"><i class="fas fa-inbox text-muted"></i></div>
+            <p class="text-muted">No orders yet</p>
+            <p class="text-muted small">Create your first order to get started</p>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Statistics</h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center g-3">
+            <div class="col-12">
+              <div class="p-3 bg-light rounded">
+                <div class="display-6 fw-bold text-primary">{{ orderList().length }}</div>
+                <small class="text-muted">Total Orders</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-light rounded">
+                <div class="h3 fw-bold text-success">{{ completedOrders() }}</div>
+                <small class="text-muted">Completed</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-light rounded">
+                <div class="h3 fw-bold text-warning">{{ orderList().length - completedOrders() }}</div>
+                <small class="text-muted">In Progress</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (showNewOrderModal()) {
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create New Order</h5>
+        <button type="button" class="btn-close" (click)="closeNewOrderModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Order Number</label>
+          <input [(ngModel)]="newOrderNumber" type="text" class="form-control" placeholder="e.g., ORD-2025-001">
+          <div class="form-text">Unique identifier for this order</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea [(ngModel)]="newOrderDesc" class="form-control" rows="4"
+            placeholder="Describe the order details..."></textarea>
+          <div class="form-text">Product details and specifications</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeNewOrderModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="createOrder()"
+          [disabled]="!newOrderNumber || !newOrderDesc">
+          Create Order
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop show"></div>
+}
+
+@if (showUpdateOrderModal()) {
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Update Order</h5>
+        <button type="button" class="btn-close" (click)="closeUpdateOrderModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Order Number</label>
+          <input [(ngModel)]="updateOrderNumber" type="text" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea [(ngModel)]="updateOrderDesc" class="form-control" rows="4"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Status</label>
+          <select [(ngModel)]="updateOrderStatus" class="form-select">
+            <option value="Pending">Pending</option>
+            <option value="Production">Production</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeUpdateOrderModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="updateOrder()">
+          Update Order
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop show"></div>
+}
