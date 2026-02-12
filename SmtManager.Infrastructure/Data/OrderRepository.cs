@@ -8,6 +8,16 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
 {
     public OrderRepository(SmtDbContext context) : base(context) { }
 
+    public async Task<IEnumerable<Order>> GetAllOrdersWithDetailsAsync()
+    {
+        return await _context.Orders
+            .Include(o => o.OrderBoards)
+                .ThenInclude(ob => ob.Board)
+                    .ThenInclude(b => b.BoardComponents)
+                        .ThenInclude(bc => bc.Component)
+            .ToListAsync();
+    }
+
     public async Task<Order?> GetOrderWithDetailsAsync(int id)
     {
         return await _context.Orders

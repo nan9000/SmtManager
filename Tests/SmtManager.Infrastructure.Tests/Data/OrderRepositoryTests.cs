@@ -35,7 +35,7 @@ public class OrderRepositoryTests
     {
         var component = new Component { Name = "Resistor", Description = "100 ohm resistor", Quantity = 100 };
         var board = new Board { Name = "PCB-001", Description = "Main board" };
-        var order = new Order { OrderNumber = "ORD001", Description = "Test order", OrderDate = DateTime.UtcNow };
+        var order = new Order { Name = "ORD001", OrderNumber = "ORD001", Description = "Test order", OrderDate = DateTime.UtcNow };
 
         await _context.Components.AddAsync(component);
         await _context.Boards.AddAsync(board);
@@ -82,8 +82,8 @@ public class OrderRepositoryTests
     [Test]
     public async Task GetAllAsync_ShouldReturnAllOrders()
     {
-        var order1 = new Order { OrderNumber = "ORD001", Description = "First", OrderDate = DateTime.UtcNow };
-        var order2 = new Order { OrderNumber = "ORD002", Description = "Second", OrderDate = DateTime.UtcNow };
+        var order1 = new Order { Name = "ORD001", OrderNumber = "ORD001", Description = "First", OrderDate = DateTime.UtcNow };
+        var order2 = new Order { Name = "ORD002", OrderNumber = "ORD002", Description = "Second", OrderDate = DateTime.UtcNow };
 
         await _context.Orders.AddRangeAsync(order1, order2);
         await _context.SaveChangesAsync();
@@ -96,7 +96,7 @@ public class OrderRepositoryTests
     [Test]
     public async Task AddAsync_WithValidOrder_ShouldAddToDatabase()
     {
-        var order = new Order { OrderNumber = "ORD001", Description = "Test", OrderDate = DateTime.UtcNow };
+        var order = new Order { Name = "ORD001", OrderNumber = "ORD001", Description = "Test", OrderDate = DateTime.UtcNow };
 
         await _repository.AddAsync(order);
 

@@ -17,12 +17,12 @@ public class OrderService : IOrderService
 
     public async Task<IEnumerable<Order>> GetAllOrdersAsync()
     {
-        return await _repository.GetAllAsync();
+        return await _repository.GetAllOrdersWithDetailsAsync();
     }
 
     public async Task<Order?> GetOrderByIdAsync(int id)
     {
-        return await _repository.GetByIdAsync(id);
+        return await _repository.GetOrderWithDetailsAsync(id);
     }
 
     public async Task<Order> CreateOrderAsync(CreateOrderDto orderDto)
@@ -41,19 +41,36 @@ public class OrderService : IOrderService
 
         var order = new Order
         {
+            Name = orderDto.OrderNumber,
             OrderNumber = orderDto.OrderNumber,
             Description = orderDto.Description,
-            OrderDate = DateTime.UtcNow
+            OrderDate = DateTime.UtcNow,
+            Status = "Pending"
         };
+
+        if (orderDto.OrderBoards != null && orderDto.OrderBoards.Any())
+        {
+            foreach (var obDto in orderDto.OrderBoards)
+            {
+                order.OrderBoards.Add(new OrderBoard
+                {
+                    BoardId = obDto.BoardId,
+                    QuantityRequired = obDto.QuantityRequired,   
+                    Board = null!, 
+                    Order = null!
+                });
+            }
+        }
 
         await _repository.AddAsync(order);
 
         return order;
     }
 
-    public async Task UpdateOrderAsync(int id, string orderNumber, string description, string status)
+
+    public async Task UpdateOrderAsync(int id, string orderNumber, string description, string status, List<OrderBoardDto>? orderBoards = null)
     {
-        var order = await _repository.GetByIdAsync(id);
+        var order = await _repository.GetOrderWithDetailsAsync(id);
         if (order == null) throw new KeyNotFoundException($"Order with ID {id} not found.");
 
         if (string.IsNullOrWhiteSpace(orderNumber)) throw new ArgumentException("Order number is required");
@@ -63,6 +80,25 @@ public class OrderService : IOrderService
         order.Description = description;
         order.Status = status;
 
+
+        if (orderBoards != null)
+        {
+            // Clear existing boards
+            order.OrderBoards.Clear();
+
+            // Add new boards
+            foreach (var obDto in orderBoards)
+            {
+                order.OrderBoards.Add(new OrderBoard
+                {
+                    BoardId = obDto.BoardId,
+                    QuantityRequired = obDto.QuantityRequired,
+                    Board = null!,
+                    Order = order
+                });
+            }
+        }
+
         await _repository.UpdateAsync(order);
     }
 
@@ -71,27 +107,24 @@ public class OrderService : IOrderService
         await _repository.DeleteAsync(id);
     }
 
-    public async Task<(byte[] FileContent, string FileName)?> GetOrderDownloadAsync(int id)
+    public async Task<FileContentResultDto?> GetOrderDownloadAsync(int id)
     {
         var order = await _repository.GetOrderWithDetailsAsync(id);
         if (order == null) return null;
 
-        var json = SerializeOrderToJson(order);
+        var json = JsonSerializer.Serialize(order, new JsonSerializerOptions 
+        { 
+            WriteIndented = true,
+            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
+        });
+        
         var bytes = Encoding.UTF8.GetBytes(json);
-        var fileName = GenerateDownloadFileName(order.OrderNumber);
-
-        return (bytes, fileName);
-    }
-
-    private string SerializeOrderToJson(Order order)
-    {
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        return JsonSerializer.Serialize(order, options);
-    }
-
-    private string GenerateDownloadFileName(string orderNumber)
-    {
-        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        return $"order_{orderNumber}_{timestamp}.json";
+        
+        return new FileContentResultDto
+        {
+            FileContent = bytes,
+            ContentType = "application/json",
+            FileName = $"order_{order.OrderNumber}_{DateTime.UtcNow:yyyyMMddHHmmss}.json"
+        };
     }
 }

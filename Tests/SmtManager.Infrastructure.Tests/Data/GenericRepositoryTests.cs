@@ -33,8 +33,8 @@ public class GenericRepositoryTests
     [Test]
     public async Task GetAllAsync_ShouldReturnAllEntities()
     {
-        var order1 = new Order { OrderNumber = "ORD001", Description = "First order", OrderDate = DateTime.UtcNow };
-        var order2 = new Order { OrderNumber = "ORD002", Description = "Second order", OrderDate = DateTime.UtcNow };
+        var order1 = new Order { Name = "ORD001", OrderNumber = "ORD001", Description = "First order", OrderDate = DateTime.UtcNow };
+        var order2 = new Order { Name = "ORD002", OrderNumber = "ORD002", Description = "Second order", OrderDate = DateTime.UtcNow };
         
         await _context.Orders.AddRangeAsync(order1, order2);
         await _context.SaveChangesAsync();
@@ -47,7 +47,7 @@ public class GenericRepositoryTests
     [Test]
     public async Task GetByIdAsync_WithValidId_ShouldReturnEntity()
     {
-        var order = new Order { OrderNumber = "ORD001", Description = "Test order", OrderDate = DateTime.UtcNow };
+        var order = new Order { Name = "ORD001", OrderNumber = "ORD001", Description = "Test order", OrderDate = DateTime.UtcNow };
         await _context.Orders.AddAsync(order);
         await _context.SaveChangesAsync();
 
@@ -66,7 +66,7 @@ public class GenericRepositoryTests
     [Test]
     public async Task AddAsync_WithValidEntity_ShouldAddToDatabase()
     {
-        var order = new Order { OrderNumber = "ORD001", Description = "Test order", OrderDate = DateTime.UtcNow };
+        var order = new Order { Name = "ORD001", OrderNumber = "ORD001", Description = "Test order", OrderDate = DateTime.UtcNow };
 
         await _repository.AddAsync(order);
 
@@ -78,7 +78,7 @@ public class GenericRepositoryTests
     [Test]
     public async Task UpdateAsync_WithValidEntity_ShouldUpdateInDatabase()
     {
-        var order = new Order { OrderNumber = "ORD001", Description = "Original", OrderDate = DateTime.UtcNow };
+        var order = new Order { Name = "ORD001", OrderNumber = "ORD001", Description = "Original", OrderDate = DateTime.UtcNow };
         await _context.Orders.AddAsync(order);
         await _context.SaveChangesAsync();
 
@@ -94,7 +94,7 @@ public class GenericRepositoryTests
     [Test]
     public async Task DeleteAsync_WithValidId_ShouldRemoveFromDatabase()
     {
-        var order = new Order { OrderNumber = "ORD001", Description = "Test order", OrderDate = DateTime.UtcNow };
+        var order = new Order { Name = "ORD001", OrderNumber = "ORD001", Description = "Test order", OrderDate = DateTime.UtcNow };
         await _context.Orders.AddAsync(order);
         await _context.SaveChangesAsync();
         var orderId = order.Id;

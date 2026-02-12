@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SmtService, Order } from '../smt.service';
+import { SmtService, Order, Board } from '../smt.service';
 import { Subscription, interval, startWith, switchMap } from 'rxjs';
 
 @Component({
@@ -22,6 +22,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     updateOrderDesc = '';
     updateOrderStatus = 'Pending';
     selectedOrderId: number | null = null;
+    updateOrderBoards = signal<{ boardId: number, name: string, quantityRequired: number }[]>([]);
+
+    // Board Selection
+    availableBoards = signal<Board[]>([]);
+    selectedBoardId = signal<number | null>(null);
+    boardQuantity = signal<number>(1);
+    currentOrderBoards = signal<{ boardId: number, name: string, quantityRequired: number }[]>([]);
 
     completedOrders = computed(() =>
         this.orderList().filter(o => o.status === 'Completed').length
@@ -33,6 +40,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.startPolling();
+        this.loadBoards();
     }
 
     ngOnDestroy(): void {
@@ -68,13 +76,60 @@ export class HomeComponent implements OnInit, OnDestroy {
         });
     }
 
+    loadBoards(): void {
+        this.smtService.getBoards().subscribe({
+            next: (data) => this.availableBoards.set(data),
+            error: (err) => console.error('Error loading boards:', err)
+        });
+    }
+
+    addBoardToOrder(): void {
+        const boardId = this.selectedBoardId();
+        const quantity = this.boardQuantity();
+
+        if (!boardId || quantity <= 0) return;
+
+        const board = this.availableBoards().find(b => b.id === Number(boardId));
+        if (!board) return;
+
+        // Check if already added
+        if (this.currentOrderBoards().some(b => b.boardId === board.id)) {
+            alert('Board already added to order.');
+            return;
+        }
+
+        this.currentOrderBoards.update(boards => [
+            ...boards,
+            { boardId: board.id, name: board.name, quantityRequired: quantity }
+        ]);
+
+        // Reset selection
+        this.selectedBoardId.set(null);
+        this.boardQuantity.set(1);
+    }
+
+    removeBoardFromOrder(boardId: number): void {
+        this.currentOrderBoards.update(boards => boards.filter(b => b.boardId !== boardId));
+    }
+
     createOrder(): void {
         if (!this.newOrderNumber?.trim() || !this.newOrderDesc?.trim()) {
             alert('Order number and description are required.');
             return;
         }
 
-        this.smtService.addOrder(this.newOrderNumber, this.newOrderDesc).subscribe({
+        const newOrder = {
+            orderNumber: this.newOrderNumber,
+            description: this.newOrderDesc,
+            status: 'Pending',
+            orderDate: new Date(),
+            orderBoards: this.currentOrderBoards().map(b => ({
+                boardId: b.boardId,
+                quantityRequired: b.quantityRequired
+            }))
+        };
+
+        this.smtService.addOrder(newOrder).subscribe({
             next: () => {
                 this.loadOrders(); // Refresh immediately
                 this.closeNewOrderModal();
@@ -83,20 +138,54 @@ export class HomeComponent implements OnInit, OnDestroy {
         });
     }
 
+    addBoardToUpdateOrder(): void {
+        const boardId = this.selectedBoardId();
+        const quantity = this.boardQuantity();
+
+        if (!boardId || quantity <= 0) return;
+
+        const board = this.availableBoards().find(b => b.id === Number(boardId));
+        if (!board) return;
+
+        if (this.updateOrderBoards().some(b => b.boardId === board.id)) {
+            alert('Board already added to order.');
+            return;
+        }
+
+        this.updateOrderBoards.update(boards => [
+            ...boards,
+            { boardId: board.id, name: board.name, quantityRequired: quantity }
+        ]);
+
+        this.selectedBoardId.set(null);
+        this.boardQuantity.set(1);
+    }
+
+    removeBoardFromUpdateOrder(boardId: number): void {
+        this.updateOrderBoards.update(boards => boards.filter(b => b.boardId !== boardId));
+    }
+
     updateOrder(): void {
         if (!this.selectedOrderId || !this.updateOrderNumber?.trim() || !this.updateOrderDesc?.trim()) {
             alert('Please fill all fields.');
             return;
         }
 
-        this.smtService.updateOrder(
-            this.selectedOrderId,
-            this.updateOrderNumber,
-            this.updateOrderDesc,
-            this.updateOrderStatus
-        ).subscribe({
+        const updatedOrder = {
+            id: this.selectedOrderId,
+            orderNumber: this.updateOrderNumber,
+            description: this.updateOrderDesc,
+            status: this.updateOrderStatus,
+            orderDate: new Date(),
+            orderBoards: this.updateOrderBoards().map(b => ({
+                boardId: b.boardId,
+                quantityRequired: b.quantityRequired
+            }))
+        };
+
+        this.smtService.updateOrder(this.selectedOrderId, updatedOrder).subscribe({
             next: () => {
-                this.loadOrders(); // Refresh immediately
+                this.loadOrders();
                 this.closeUpdateOrderModal();
             },
             error: (err) => alert(`Failed to update order: ${err.message || 'Unknown error'}`)
@@ -122,6 +211,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     openNewOrderModal(): void {
         this.newOrderNumber = '';
         this.newOrderDesc = '';
+        this.currentOrderBoards.set([]);
+        this.selectedBoardId.set(null);
+        this.boardQuantity.set(1);
         this.showNewOrderModal.set(true);
     }
 
@@ -134,6 +226,15 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.updateOrderNumber = order.orderNumber;
         this.updateOrderDesc = order.description;
         this.updateOrderStatus = order.status || 'Pending';
+
+        // Load existing boards
+        const existingBoards = order.orderBoards?.map(ob => ({
+            boardId: ob.boardId,
+            name: ob.board?.name || `Board #${ob.boardId}`,
+            quantityRequired: ob.quantityRequired
+        })) || [];
+        this.updateOrderBoards.set(existingBoards);
+
         this.showUpdateOrderModal.set(true);
     }
 

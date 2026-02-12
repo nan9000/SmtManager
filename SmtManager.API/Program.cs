@@ -9,7 +9,8 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -20,9 +21,12 @@ builder.Services.AddDbContext<SmtDbContext>(options =>
     options.UseSqlServer(connStr, sql => sql.EnableRetryOnFailure(3)));
 
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IBoardRepository, BoardRepository>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IBoardService, BoardService>();
+builder.Services.AddScoped<IComponentService, ComponentService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddCors(options =>

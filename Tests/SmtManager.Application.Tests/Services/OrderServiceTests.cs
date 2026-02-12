@@ -26,8 +26,8 @@ public class OrderServiceTests
     {
         var orders = new List<Order>
         {
-            new Order { Id = 1, OrderNumber = "ORD001", Description = "First order", OrderDate = DateTime.UtcNow },
-            new Order { Id = 2, OrderNumber = "ORD002", Description = "Second order", OrderDate = DateTime.UtcNow }
+            new Order { Id = 1, Name = "ORD001", OrderNumber = "ORD001", Description = "First order", OrderDate = DateTime.UtcNow },
+            new Order { Id = 2, Name = "ORD002", OrderNumber = "ORD002", Description = "Second order", OrderDate = DateTime.UtcNow }
         };
 
         _mockRepository.Setup(x => x.GetAllAsync()).ReturnsAsync(orders);
@@ -43,6 +43,7 @@ public class OrderServiceTests
         var order = new Order
         {
             Id = 1,
+            Name = "ORD001",
             OrderNumber = "ORD001",
             Description = "Test order",
             OrderDate = DateTime.UtcNow
@@ -112,6 +113,7 @@ public class OrderServiceTests
         var order = new Order
         {
             Id = 1,
+            Name = "ORD001",
             OrderNumber = "ORD001",
             Description = "Test order",
             OrderDate = DateTime.UtcNow
@@ -122,8 +124,8 @@ public class OrderServiceTests
         var result = await _orderService.GetOrderDownloadAsync(1);
 
         result.Should().NotBeNull();
-        result!.Value.FileContent.Should().NotBeEmpty();
-        result.Value.FileName.Should().Contain("order_ORD001_");
+        result!.FileContent.Should().NotBeEmpty();
+        result.FileName.Should().Contain("order_ORD001_");
     }
 
     [Test]

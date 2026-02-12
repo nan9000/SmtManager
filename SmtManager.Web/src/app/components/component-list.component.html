@@ -1,0 +1,53 @@
+<div class="container mt-4">
+    <h2>Components Management</h2>
+
+    <!-- Add Component Form -->
+    <div class="card mb-4">
+        <div class="card-header">Add New Component</div>
+        <div class="card-body">
+            <form (ngSubmit)="addComponent()">
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" placeholder="Name" [(ngModel)]="newComponent.name"
+                            name="name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" placeholder="Description"
+                            [(ngModel)]="newComponent.description" name="description" required>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" placeholder="Quantity"
+                            [(ngModel)]="newComponent.quantity" name="quantity" required>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-success w-100">Add</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Components List -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let component of components">
+                <td>{{ component.id }}</td>
+                <td>{{ component.name }}</td>
+                <td>{{ component.description }}</td>
+                <td>{{ component.quantity }}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" (click)="deleteComponent(component.id)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

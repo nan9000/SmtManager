@@ -45,7 +45,7 @@ public class OrdersController : ControllerBase
     {
         try
         {
-            await _orderService.UpdateOrderAsync(id, request.OrderNumber, request.Description, request.Status);
+            await _orderService.UpdateOrderAsync(id, request.OrderNumber, request.Description, request.Status, request.OrderBoards);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -81,6 +81,6 @@ public class OrdersController : ControllerBase
         var result = await _orderService.GetOrderDownloadAsync(id);
         if (result == null) return NotFound(new { message = "Order not found" });
 
-        return File(result.Value.FileContent, "application/json", result.Value.FileName);
+        return File(result.FileContent, "application/json", result.FileName);
     }
 }
