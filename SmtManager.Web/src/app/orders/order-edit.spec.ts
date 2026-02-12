@@ -1,4 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 
 import { OrderEdit } from './order-edit';
 
@@ -8,9 +11,14 @@ describe('OrderEdit', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [OrderEdit]
+      imports: [OrderEdit],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([])
+      ]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(OrderEdit);
     component = fixture.componentInstance;
