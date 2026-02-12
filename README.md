@@ -45,4 +45,4 @@ dotnet test
 - Default Credentials (for testing): `admin` / `admin123`
 
 ---
-**Author**: Adnan Jukic
+**Author**: Adnan

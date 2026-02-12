@@ -1,0 +1,82 @@
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ isEditMode ? 'Edit Board' : 'Add New Board' }}</h3>
+        </div>
+        <div class="card-body">
+            <form (ngSubmit)="save()" #boardForm="ngForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" [(ngModel)]="board.name" name="name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="description" [(ngModel)]="board.description"
+                            name="description" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="length" class="form-label">Length</label>
+                        <input type="number" class="form-control" id="length" [(ngModel)]="board.length" name="length"
+                            required min="0">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="width" class="form-label">Width</label>
+                        <input type="number" class="form-control" id="width" [(ngModel)]="board.width" name="width"
+                            required min="0">
+                    </div>
+                </div>
+
+                <hr>
+                <h5>Components on Board</h5>
+
+                <!-- Component Selection -->
+                <div class="row mb-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Select Component</label>
+                        <select class="form-select" [(ngModel)]="selectedComponentId" name="selectedComponent">
+                            <option [ngValue]="null">Select Component...</option>
+                            <option *ngFor="let comp of availableComponents" [value]="comp.id">
+                                {{ comp.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" class="form-control" [(ngModel)]="componentPlacementCount" name="compCount"
+                            min="1">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-secondary w-100" (click)="addComponentToBoard()">Add to
+                            Board</button>
+                    </div>
+                </div>
+
+                <!-- Selected Components List -->
+                <div class="mb-4">
+                    <ul class="list-group">
+                        <li *ngFor="let item of currentBoardComponents"
+                            class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ item.name }}</span>
+                            <div>
+                                <span class="badge bg-primary rounded-pill me-2">Qty: {{ item.placementCount }}</span>
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                    (click)="removeComponentFromBoard(item.componentId)">Remove</button>
+                            </div>
+                        </li>
+                        <li *ngIf="currentBoardComponents.length === 0" class="list-group-item text-muted text-center">
+                            No components added to this board yet.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="!boardForm.form.valid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

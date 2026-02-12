@@ -1,0 +1,77 @@
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ isEditMode ? 'Edit Order' : 'Create New Order' }}</h3>
+        </div>
+        <div class="card-body">
+            <form (ngSubmit)="save()" #orderForm="ngForm">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="orderNumber" class="form-label">Order Number</label>
+                        <input type="text" class="form-control" id="orderNumber" [(ngModel)]="order.orderNumber"
+                            name="orderNumber" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" [(ngModel)]="order.status" name="status">
+                            <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" [(ngModel)]="order.description" name="description"
+                        rows="3"></textarea>
+                </div>
+
+                <hr>
+                <h5>Boards in Order</h5>
+
+                <!-- Board Selection -->
+                <div class="row mb-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Select Board</label>
+                        <select class="form-select" [(ngModel)]="selectedBoardId" name="selectedBoard">
+                            <option [ngValue]="null">Select Board...</option>
+                            <option *ngFor="let b of availableBoards" [value]="b.id">
+                                {{ b.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" class="form-control" [(ngModel)]="boardQuantityRequired" name="boardQty"
+                            min="1">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-secondary w-100" (click)="addBoardToOrder()">Add to
+                            Order</button>
+                    </div>
+                </div>
+
+                <!-- Selected Boards List -->
+                <div class="mb-4">
+                    <ul class="list-group">
+                        <li *ngFor="let item of currentOrderBoards"
+                            class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ item.name }}</span>
+                            <div>
+                                <span class="badge bg-primary rounded-pill me-2">Qty: {{ item.quantityRequired }}</span>
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                    (click)="removeBoardFromOrder(item.boardId)">Remove</button>
+                            </div>
+                        </li>
+                        <li *ngIf="currentOrderBoards.length === 0" class="list-group-item text-muted text-center">
+                            No boards added to this order yet.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="!orderForm.form.valid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

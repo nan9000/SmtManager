@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SmtService, Component as SmtComponent } from '../smt.service';
@@ -6,15 +7,16 @@ import { SmtService, Component as SmtComponent } from '../smt.service';
 @Component({
     selector: 'app-component-list',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './component-list.component.html',
     styleUrls: ['./component-list.component.css']
 })
 export class ComponentListComponent implements OnInit {
     components: SmtComponent[] = [];
-    newComponent: any = { name: '', description: '', quantity: 0 };
+    filteredComponents: SmtComponent[] = [];
+    searchTerm: string = '';
 
-    constructor(private smtService: SmtService) { }
+    constructor(private smtService: SmtService, private router: Router) { }
 
     ngOnInit(): void {
         this.loadComponents();
@@ -23,19 +25,36 @@ export class ComponentListComponent implements OnInit {
     loadComponents(): void {
         this.smtService.getComponents().subscribe(data => {
             this.components = data;
+            this.filterComponents();
         });
     }
 
-    addComponent(): void {
-        this.smtService.addComponent(this.newComponent).subscribe(component => {
-            this.components.push(component);
-            this.newComponent = { name: '', description: '', quantity: 0 };
-        });
+    filterComponents(): void {
+        if (!this.searchTerm) {
+            this.filteredComponents = this.components;
+        } else {
+            const term = this.searchTerm.toLowerCase();
+            this.filteredComponents = this.components.filter(c =>
+                c.name.toLowerCase().includes(term) ||
+                c.description.toLowerCase().includes(term)
+            );
+        }
+    }
+
+    editComponent(id: number): void {
+        this.router.navigate(['/components/edit', id]);
+    }
+
+    createComponent(): void {
+        this.router.navigate(['/components/create']);
     }
 
     deleteComponent(id: number): void {
-        this.smtService.deleteComponent(id).subscribe(() => {
-            this.components = this.components.filter(c => c.id !== id);
-        });
+        if (confirm('Are you sure you want to delete this component?')) {
+            this.smtService.deleteComponent(id).subscribe(() => {
+                this.components = this.components.filter(c => c.id !== id);
+                this.filterComponents();
+            });
+        }
     }
 }
