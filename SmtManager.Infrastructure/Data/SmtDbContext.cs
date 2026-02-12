@@ -7,12 +7,12 @@ public class SmtDbContext : DbContext
 {
     public SmtDbContext(DbContextOptions<SmtDbContext> options) : base(options) { }
 
-    public DbSet<Order> Orders { get; set; }
-    public DbSet<Board> Boards { get; set; }
-    public DbSet<Component> Components { get; set; }
-    public DbSet<OrderBoard> OrderBoards { get; set; }
-    public DbSet<BoardComponent> BoardComponents { get; set; }
-    public DbSet<User> Users { get; set; }
+    public DbSet<Order> Orders { get; set; } = null!;
+    public DbSet<Board> Boards { get; set; } = null!;
+    public DbSet<Component> Components { get; set; } = null!;
+    public DbSet<OrderBoard> OrderBoards { get; set; } = null!;
+    public DbSet<BoardComponent> BoardComponents { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
