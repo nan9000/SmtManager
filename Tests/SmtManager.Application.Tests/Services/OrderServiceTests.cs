@@ -30,7 +30,7 @@ public class OrderServiceTests
             new Order { Id = 2, Name = "ORD002", OrderNumber = "ORD002", Description = "Second order", OrderDate = DateTime.UtcNow }
         };
 
-        _mockRepository.Setup(x => x.GetAllAsync()).ReturnsAsync(orders);
+        _mockRepository.Setup(x => x.GetAllOrdersWithDetailsAsync()).ReturnsAsync(orders);
 
         var result = await _orderService.GetAllOrdersAsync();
 
@@ -49,7 +49,7 @@ public class OrderServiceTests
             OrderDate = DateTime.UtcNow
         };
 
-        _mockRepository.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(order);
+        _mockRepository.Setup(x => x.GetOrderWithDetailsAsync(1)).ReturnsAsync(order);
 
         var result = await _orderService.GetOrderByIdAsync(1);
 
